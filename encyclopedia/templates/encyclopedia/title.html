@@ -7,7 +7,7 @@
 </head>
 <body>
     {% block body %}
-        {{ entry }}
+        {{ entry|safe }}
     {% endblock %}
 </body>
 </html>
