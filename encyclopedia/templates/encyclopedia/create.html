@@ -10,9 +10,16 @@
         <h1>Create File</h1>
         <form method="post" action="{% url 'create' %}">
             {% csrf_token %}
-            <input name="title" class="form-control" placeholder="Title"/>
-            <input name="content" class="form-control" placeholder="Content"/>
-            <button class="btn-dark" type="submit">Save</button>
+            <div class="col-7">
+                <label for="title" class="form-label">Title</label>
+                <input name="title" id="title" class="form-control" placeholder="Title"/>
+            </div>
+            <div class="col-7">
+                <label for="content" class="form-label">Content</label>
+                <textarea name="content" id="content" class="form-control" rows="5" placeholder="Enter Markdown Content"></textarea>
+                <hr/>
+                <button class="btn-dark btn-lg" type="submit">Save</button>
+            </div>
         </form>
     {% endblock %}
 </body>
