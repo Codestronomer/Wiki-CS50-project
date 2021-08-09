@@ -24,6 +24,7 @@ def detail(request, title):
 
 
 def create(request):
+    entries = util.list_entries()
     if request.method == 'POST':
 
         form = CreateForm(request.POST)
@@ -31,7 +32,12 @@ def create(request):
         if form.is_valid():
             title = form.cleaned_data['title']
             content = form.cleaned_data['content']
-            util.save_entry(title, content)
+
+            for entry in entries:
+                if title.lower() == entry.lower():
+                    return redirect(reverse_lazy("error_page"))
+                else:
+                    util.save_entry(title, content)
         return redirect('/')
     else:
         return render(request, 'encyclopedia/create.html', {'form': CreateForm()})
@@ -41,17 +47,13 @@ def edit(request, title):
     name = title
     entry = util.get_entry(title)
     if entry is None:
-        return redirect(reverse_lazy('er'))
+        return redirect(reverse_lazy('error_page'))
     if request.method == 'POST':
-
-        form = EditForm(request.POST)
-        if form.is_valid():
-            content = form.cleaned_data['content']
-            util.save_entry(title, content)
-            return redirect("/")
-
-    return render(request, "encyclopedia/edit.html", {"form": EditForm(initial={'content': entry}), "name": name})
-
+        content = request.POST['content']
+        util.save_entry(title, content)
+        return redirect("/")
+    else:
+        return render(request, "encyclopedia/edit.html", {'content': entry, "name": name})
 
 
 def search_result(request):
@@ -60,22 +62,23 @@ def search_result(request):
     if request.method == 'GET':
         search = request.GET.get('search')
         for entry in entries:
-            if entry.lower().__contains__(search.lower()):
-                results += entry
+            if search.lower() in entry.lower():
+                results.append(entry)
         return render(request, "encyclopedia/search.html", {"results": results})
     else:
         return render(request, "encyclopedia/layout.html", {"form": SearchForm()})
 
 
+# Renders a random entry page
 def random_page(request):
     parser = Markdown()
     entries = util.list_entries()
-    n = len(entries)
-    rand = random.randint(1, n)
-    entry = util.get_entry(entries[rand-1])
-    return render(request, "encyclopedia/title.html", {'entry': parser.convert(entry)})
+    entry = random.choice(entries)
+    rand_entry = util.get_entry(entry)
+    return render(request, "encyclopedia/title.html", {'entry': parser.convert(rand_entry), 'name': entry})
 
 
+# Renders Error page
 def error_404(request):
     return render(request, "encyclopedia/error.html")
 

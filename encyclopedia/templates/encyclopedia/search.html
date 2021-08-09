@@ -9,7 +9,7 @@
     {% block body %}
         <h2>Search results</h2>
         {% for result in results %}
-            <a href="{% url 'detail' result %}">{{ result }}</a>
+    <li><a href="{% url 'detail' result %}">{{ result }}</a></li>
         {% empty %}
             <p>No result matching your search</p>
         {% endfor %}
