@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views.generic import ListView
 from django.urls import reverse_lazy
-from .forms import CreateForm, SearchForm
+from .forms import CreateForm, SearchForm, EditForm
 from markdown2 import Markdown
 import random, re
 
@@ -16,10 +16,11 @@ def index(request):
 
 def detail(request, title):
     entry = util.get_entry(title)
+    name = title
     parser = Markdown()
     if entry is None:
         return redirect(reverse_lazy('error_page'))
-    return render(request, "encyclopedia/title.html", {"entry": parser.convert(entry)})
+    return render(request, "encyclopedia/title.html", {"entry": parser.convert(entry), "name": title})
 
 
 def create(request):
@@ -36,8 +37,21 @@ def create(request):
         return render(request, 'encyclopedia/create.html', {'form': CreateForm()})
 
 
-def edit(request):
-    pass
+def edit(request, title):
+    name = title
+    entry = util.get_entry(title)
+    if entry is None:
+        return redirect(reverse_lazy('er'))
+    if request.method == 'POST':
+
+        form = EditForm(request.POST)
+        if form.is_valid():
+            content = form.cleaned_data['content']
+            util.save_entry(title, content)
+            return redirect("/")
+
+    return render(request, "encyclopedia/edit.html", {"form": EditForm(initial={'content': entry}), "name": name})
+
 
 
 def search_result(request):
@@ -53,18 +67,20 @@ def search_result(request):
         return render(request, "encyclopedia/layout.html", {"form": SearchForm()})
 
 
-def random_page(request, title):
-    # entries = util.list_entries()
-    # entry = util.get_entry(random.choice(entries))
-    # return render(request, "encyclopedia/layout.html", {'entry': entry})
-    pass
+def random_page(request):
+    parser = Markdown()
+    entries = util.list_entries()
+    n = len(entries)
+    rand = random.randint(1, n)
+    entry = util.get_entry(entries[rand-1])
+    return render(request, "encyclopedia/title.html", {'entry': parser.convert(entry)})
 
 
 def error_404(request):
     return render(request, "encyclopedia/error.html")
 
 
-def parser(mdText):
+def parsered(mdText):
     htmlText = re.sub(r'^# (.*$)', r"<h1>\1</h1>", mdText, flags=re.I | re.M)
     htmlText2 = re.sub(r'## (.*$)', r"<h2>\1</h2>", htmlText, flags=re.M | re.I)
     htmlText3 = re.sub(r'^### (.*$)', r"<h3>\1</h3>", htmlText2, flags=re.M | re.I)
