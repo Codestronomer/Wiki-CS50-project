@@ -1,0 +1,15 @@
+{% extends "encyclopedia/layout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{{ name }}{% endblock %}</title>
+</head>
+<body>
+    {% block body %}
+        <a href="{% url 'edit' name %}"><button type="button" class="btn-dark">Edit</button></a>
+        <hr>
+        {{ entry|safe }}
+    {% endblock %}
+</body>
+</html>
